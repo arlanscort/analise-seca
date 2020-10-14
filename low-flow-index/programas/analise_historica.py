@@ -6,9 +6,9 @@ import datetime as dt
 import numpy as np
 from scipy.stats import gamma, expon
 postos = [  'uniao_da_vitoria'
-            'rio_negro',
-            'porto_amazonas',
-            'sao_mateus_do_sul'
+#            'rio_negro',
+#            'porto_amazonas',
+#            'sao_mateus_do_sul'
             ]
 qref = 95
 tc   = 15
@@ -60,6 +60,7 @@ for posto in postos:
                         df_qrefs.loc[(df_qrefs['mes']==x.name.month)&
                         (df_qrefs['dia']==28),'q95'].values[0], axis=1)
     df_deficits['di'] = df_deficits[qref] - df_deficits['q_m3s']
+    df_deficits.to_csv('../dados-saida/{}_serie.csv'.format(posto))
 
     # 4 - Separacao dos eventos de seca
     df_eventos = pd.DataFrame(columns = ['ts','te','D'])
