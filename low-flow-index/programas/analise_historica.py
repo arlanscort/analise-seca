@@ -80,6 +80,9 @@ for posto in postos:
                 i += 1
                 df_eventos.loc[i,'ts'] = row[0]
             D += row[3]
+    if pd.isnull(df_eventos.iloc[-1,1]):
+        df_eventos.iloc[-1,1] = df_deficits.iloc[-1].name - dt.timedelta(days=1)
+        df_eventos.iloc[-1,2] = D
 
     # 5 - Calculo das duracoes de cada evento
     df_eventos['d'] = (df_eventos['te']-df_eventos['ts']) + dt.timedelta(days=1)
