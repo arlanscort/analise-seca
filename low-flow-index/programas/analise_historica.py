@@ -47,8 +47,9 @@ for posto in postos:
             , parse_dates=True, index_col='data')['q_m3s']
 
     # 2 - Calculo das vazoes de referencia (thresholds)
-    percs = [95, 90, 84]
+    percs = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50]
     df_qrefs = thresholds(srq, percs)
+    df_qrefs.to_csv('../dados-saida/{}_quantis.csv'.format(posto))
 
     # 3 - Criacao do DataFrame contendo os deficits e qrefs de cada intervalo
     df_deficits = srq.to_frame()

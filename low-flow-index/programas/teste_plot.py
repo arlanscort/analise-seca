@@ -8,7 +8,7 @@ import seaborn as sns
 import datetime as dt
 
 #DEFINICAO PERIODO ANALISE
-data_inicial = dt.datetime(2020, 6, 1,  0,  0) #YYYY, M, D, H, Min
+data_inicial = dt.datetime(2020, 1, 1,  0,  0) #YYYY, M, D, H, Min
 data_final = dt.datetime.now()
 
 dir_plot = "../dados-saida/"
