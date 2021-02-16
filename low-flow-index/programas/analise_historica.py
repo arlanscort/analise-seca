@@ -8,8 +8,10 @@ from scipy.stats import gamma, expon
 postos = [  #'uniao_da_vitoria',
 #            'rio_negro',
 #            'porto_amazonas',
-#            'sao_mateus_do_sul'
-            'tomazina'
+#            'sao_mateus_do_sul',
+#            'tomazina',
+            'fazendinha',
+#            'passauna'
             ]
 qref = 95
 tc   = 15
@@ -30,7 +32,7 @@ def thresholds(srq, percs):
         idx_t = [ i in tuplas_janela for i in tuplas_idx ]
         linha = [t.month, t.day]
         for perc in percs:
-            q = np.percentile(srq.loc[idx_t].to_numpy(),100-perc)
+            q = np.nanpercentile(srq.loc[idx_t].to_numpy(),100-perc)
             linha.append(round(q,2))
         df_qrefs.loc[t.dayofyear,:] = linha
     return df_qrefs
@@ -175,4 +177,4 @@ for posto in postos:
     # 12 - Exporta os resultados
     df_eventos.to_excel('../dados-saida/{}.xlsx'.format(posto))
 
-    print('12 ok')
+    print('Finalizado {}'.format(posto))
