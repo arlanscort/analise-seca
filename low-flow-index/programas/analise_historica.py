@@ -10,7 +10,8 @@ postos = [  #'uniao_da_vitoria',
 #            'porto_amazonas',
 #            'sao_mateus_do_sul',
 #            'tomazina',
-            'fazendinha',
+#            'fazendinha',
+            'maringa',
 #            'passauna'
             ]
 qref = 95

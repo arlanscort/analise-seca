@@ -18,7 +18,8 @@ os.chdir(dir_plot)
 
 #nome_bacia = 'uniao_da_vitoria'
 #nome_bacia = 'tomazina'
-nome_bacia = 'fazendinha'
+#nome_bacia = 'fazendinha'
+nome_bacia = 'maringa'
 
 data_ini = data_inicial
 data_fim = data_final
@@ -72,6 +73,6 @@ plt.gca().xaxis.set_tick_params(rotation = 30)
 plt.gca().set_xbound(data_ini, data_fim)
 # Legenda
 plt.title(nome_bacia.replace('_',' ').title())
-plt.legend()
+plt.legend(loc=2)
 plt.savefig(nome_bacia+'_plot2.png', dpi = 300)
 plt.show()
