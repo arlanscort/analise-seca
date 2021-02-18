@@ -10,13 +10,20 @@ import matplotlib.dates as mdates
 import seaborn as sns
 
 postos = {
-          'uniao_da_vitoria':'União da Vitória \n Rio Iguaçu - 24200 km²',
-          'tomazina':'Tomazina \n Rio das Cinzas - 2020 km²',
-          'fazendinha':'RMC \n Rio Pequeno - 106 km²',
-          'maringa':'Maringá \n Ribeirão Pirapó - 1240 km²',
-          'passauna':'RMC - Campo Largo \n Rio Passaúna - 84.4 km²',
-          'senges':'Bacia do Rio das Cinzas - Sengés \n Rio Jaguaricatu - 869 km²',
-          'cachoeira':'Cachoeira',
+          'uniao_da_vitoria':'Bacia do Iguaçu - União da Vitória \n Rio Iguaçu - 24200 km²',
+#          'tomazina':'Bacia do Rio das Cinzas - Tomazina \n Rio das Cinzas - 2020 km²',
+#          'fazendinha':'Alto Iguaçu - RMC \n Rio Pequeno / Fazendinha - 106 km²',
+#          'maringa':'Bacia do Pirapó - Maringá \n Ribeirão Pirapó - 1240 km²',
+#          'passauna':'RMC - Campo Largo \n Rio Passaúna - 84.4 km²',
+#          'senges':'Bacia do Itararé - Sengés \n Rio Jaguaricatu - 689 km²',
+#          'cachoeira':'Alto Iguaçu - RMC \n Rio Miringuava / Cachoeira - 272 km²',
+#          'ponte_acungui':'Bacia do Rio Ribeira - Campo Largo \n Rio Açungui - 582 km²',
+#          'porto_carriel':'Bacia do Piquiri - Porto Carriel \n Rio Piquiri - 3540 km²',
+#          'porto_bananeira':'Porto Bananeira',
+#          'francisco_beltrao':'Baixo Iguaçu - Francisco Beltrão \n Rio Marrecas - 336 km²',
+#          'porto_espanhol':'Bacia do Ivaí - Porto Espanhol \n Rio Ivaí - 8540 km²,'
+#          'morretes':'Bacia Litorânea - Morretes \n Rio Nhundiaquara - 215 km2',
+          'irati':'Bacia do Tibagi - Irati \n Rio Imbituva - 226 km²',
           }
 qref = 95
 tc   = 15
@@ -78,13 +85,13 @@ for posto, legenda in postos.items():
         if (diadoano2.loc[:,q].values[0] > srq[-1]):
             continue
         if (diadoano2.loc[:,q].values[0] <= srq[-1]):
-            valor_referencia = diadoano2.loc[:,'q95'].values[0]
-            print(posto.replace('_',' ').title(),'\n',
-                  'Data: ', srq.index[-1].date(), '\n',
-                  'Vazao atual = ', str(srq[-1]), ' m3/s\n',
-                  'Excedencia (q%) = ', q, '\n',
-                  'Vazao de referencia (q95)= ', str(valor_referencia), 'm3/s')
             break
+    valor_referencia = diadoano2.loc[:,'q95'].values[0]
+    print(posto.replace('_',' ').title(),'\n',
+          'Data: ', srq.index[-1].date(), '\n',
+          'Vazao atual = ', str(srq[-1]), ' m3/s\n',
+          'Excedencia (q%) = ', q, '\n',
+          'Vazao de referencia (q95)= ', str(valor_referencia), 'm3/s')
 
     print('3 ok')
 
@@ -122,8 +129,8 @@ for posto, legenda in postos.items():
     plt.plot(serie_observada['q_m3s'], label = "Observado", linewidth = 0.6, color = 'black')
     plt.plot(serie_observada['q95'], label = "Q95", linewidth = 0.8, color = 'maroon')
     plt.fill_between(serie_observada.index, obs, q95, where = (obs < q95), color = 'red', alpha = 0.3)
-    #plt.plot(serie_observada['q50'], label = "Q50", linewidth = 0.8, color = 'darkgoldenrod')
-    #plt.fill_between(serie_observada.index, obs, q50, where = (obs < q50), color = 'gold', alpha = 0.3)
+    plt.plot(serie_observada['q50'], label = "Q50", linewidth = 0.8, color = 'darkgoldenrod')
+    plt.fill_between(serie_observada.index, obs, q50, where = (obs < q50), color = 'gold', alpha = 0.3)
     plt.scatter(obs.index[-1], obs[-1], label = "Vazão atual", color = "darkblue", s = 15)
     plt.xlabel('Data')
     plt.ylabel('Vazão [m3s-1]')
