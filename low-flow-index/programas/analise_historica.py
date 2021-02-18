@@ -5,19 +5,22 @@ import pandas as pd
 import datetime as dt
 import numpy as np
 from scipy.stats import gamma, expon
-postos = [  #'uniao_da_vitoria',
-#            'rio_negro',
-#            'porto_amazonas',
-#            'sao_mateus_do_sul',
-#            'tomazina',
-#            'fazendinha',
-            'maringa',
-#            'passauna'
-            ]
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import seaborn as sns
+
+postos = {
+          'uniao_da_vitoria':'União da Vitória \n Rio Iguaçu - 24200 km²',
+          'tomazina':'Tomazina \n Rio das Cinzas - 2020 km²',
+          'fazendinha':'RMC \n Rio Pequeno - 106 km²',
+          'maringa':'Maringá \n Ribeirão Pirapó - 1240 km²',
+          'passauna':'RMC - Campo Largo \n Rio Passaúna - 84.4 km²',
+          'senges':'Bacia do Rio das Cinzas - Sengés \n Rio Jaguaricatu - 869 km²',
+          'cachoeira':'Cachoeira',
+          }
 qref = 95
 tc   = 15
 d    = 5
-
 
 ################################################################################
 # FUNCOES
@@ -41,7 +44,11 @@ def thresholds(srq, percs):
 ################################################################################
 # ALGORITMO
 ################################################################################
-for posto in postos:
+for posto, legenda in postos.items():
+    qref = 95
+    tc   = 15
+    d    = 5
+
     print('Processando {}'.format(posto))
 
     # 1 - Aquisicao da serie de vazoes do posto
@@ -101,81 +108,117 @@ for posto in postos:
 
     print('4 ok')
 
-    # 5 - Separacao dos eventos de seca
-    df_eventos = pd.DataFrame(columns = ['ts','te','D'])
-    i  = 0 # numero do evento
-    ts = 0 # tempo de inicio
-    te = 0 # tempo de encerramento
-    D  = 0 # deficit acumulado
-    for row in df_deficits.itertuples():
-        if row[3] <= 0:
-            if D > 0:
-                df_eventos.loc[i,'te'] = row[0] - dt.timedelta(days=1)
-                df_eventos.loc[i,'D'] = D
-                D = 0
-            continue
-        else:
-            if D == 0: # novo evento!
-                i += 1
-                df_eventos.loc[i,'ts'] = row[0]
-            D += row[3]
-    if pd.isnull(df_eventos.iloc[-1,1]):
-        df_eventos.iloc[-1,1] = df_deficits.iloc[-1].name
-        df_eventos.iloc[-1,2] = D
+    # 5 - Plotagem serie c/ percentis
+    nome_bacia = posto
+    data_ini = dt.datetime.now()- dt.timedelta(days=365)
+    data_fim = dt.datetime.now()
+    serie_observada = df_deficits
+    serie_observada = serie_observada.loc[str(data_ini) : str(data_fim)]
+    obs = serie_observada['q_m3s']
+    q95 = serie_observada['q95']
+    q50 = serie_observada['q50']
 
-    print('5 ok')
+    plt.figure()
+    plt.plot(serie_observada['q_m3s'], label = "Observado", linewidth = 0.6, color = 'black')
+    plt.plot(serie_observada['q95'], label = "Q95", linewidth = 0.8, color = 'maroon')
+    plt.fill_between(serie_observada.index, obs, q95, where = (obs < q95), color = 'red', alpha = 0.3)
+    #plt.plot(serie_observada['q50'], label = "Q50", linewidth = 0.8, color = 'darkgoldenrod')
+    #plt.fill_between(serie_observada.index, obs, q50, where = (obs < q50), color = 'gold', alpha = 0.3)
+    plt.scatter(obs.index[-1], obs[-1], label = "Vazão atual", color = "darkblue", s = 15)
+    plt.xlabel('Data')
+    plt.ylabel('Vazão [m3s-1]')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%Y'))
+    plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+    plt.gca().xaxis.set_tick_params(rotation = 30)
+    plt.gca().set_xbound(data_ini, data_fim)
+    plt.title(legenda)
+    plt.annotate(q,(obs.index[-1],obs[-1]), size=8, weight='bold',
+                 xytext=(obs.index[-1]+dt.timedelta(days=3),obs[-1]))
+    plt.legend(loc=2)
+    plt.savefig('../dados-saida/'+nome_bacia+'_plot3.png', dpi = 300)
+    plt.show()
+    plt.close()
+    print('Figura gerada')
 
-    # 6 - Calculo das duracoes de cada evento
-    df_eventos['d'] = (df_eventos['te']-df_eventos['ts']) + dt.timedelta(days=1)
+    try:
+        # 5 - Separacao dos eventos de seca
+        df_eventos = pd.DataFrame(columns = ['ts','te','D'])
+        i  = 0 # numero do evento
+        ts = 0 # tempo de inicio
+        te = 0 # tempo de encerramento
+        D  = 0 # deficit acumulado
+        for row in df_deficits.itertuples():
+            if row[3] <= 0:
+                if D > 0:
+                    df_eventos.loc[i,'te'] = row[0] - dt.timedelta(days=1)
+                    df_eventos.loc[i,'D'] = D
+                    D = 0
+                continue
+            else:
+                if D == 0: # novo evento!
+                    i += 1
+                    df_eventos.loc[i,'ts'] = row[0]
+                D += row[3]
+        if pd.isnull(df_eventos.iloc[-1,1]):
+            df_eventos.iloc[-1,1] = df_deficits.iloc[-1].name
+            df_eventos.iloc[-1,2] = D
 
-    print('6 ok')
+        print('5 ok')
 
-    # 7 - Merge dos eventos com intervalos entre eventos iguais ou menores que tc
-    for i in df_eventos.index[1:]:
-        gap=df_eventos.loc[i,'ts']-df_eventos.loc[i-1,'te']-dt.timedelta(days=1)
-        if gap <= dt.timedelta(days=tc):
-            df_eventos.loc[i,'ts'] = df_eventos.loc[i-1,'ts']
-            df_eventos.loc[i,'D']  += df_eventos.loc[i-1,'D']
-            df_eventos.loc[i,'d']  += df_eventos.loc[i-1,'d']
-            df_eventos.drop(index=i-1, inplace=True)
+        # 6 - Calculo das duracoes de cada evento
+        df_eventos['d'] = (df_eventos['te']-df_eventos['ts']) + dt.timedelta(days=1)
 
-    print('7 ok')
+        print('6 ok')
 
-    # 8 - Eliminacao dos eventos com duracao inferior a d
-    df_eventos.drop(df_eventos[df_eventos['d']<=dt.timedelta(days=d)].index,
-        inplace=True)
+        # 7 - Merge dos eventos com intervalos entre eventos iguais ou menores que tc
+        for i in df_eventos.index[1:]:
+            gap=df_eventos.loc[i,'ts']-df_eventos.loc[i-1,'te']-dt.timedelta(days=1)
+            if gap <= dt.timedelta(days=tc):
+                df_eventos.loc[i,'ts'] = df_eventos.loc[i-1,'ts']
+                df_eventos.loc[i,'D']  += df_eventos.loc[i-1,'D']
+                df_eventos.loc[i,'d']  += df_eventos.loc[i-1,'d']
+                df_eventos.drop(index=i-1, inplace=True)
 
-    print('8 ok')
+        print('7 ok')
 
-    # 9 - Calculo das duracoes "reais" dos evento, ou seja,
-    # considerando o periodo mesclado e nao soh os dias com registro de deficit
-    df_eventos['d'] = (df_eventos['te']-df_eventos['ts']) + dt.timedelta(days=1)
+        # 8 - Eliminacao dos eventos com duracao inferior a d
+        df_eventos.drop(df_eventos[df_eventos['d']<=dt.timedelta(days=d)].index,
+            inplace=True)
 
-    print('9 ok')
+        print('8 ok')
 
-    # 10 - Exporta o df em excel
-    df_eventos.to_excel('../dados-saida/{}.xlsx'.format(posto))
+        # 9 - Calculo das duracoes "reais" dos evento, ou seja,
+        # considerando o periodo mesclado e nao soh os dias com registro de deficit
+        df_eventos['d'] = (df_eventos['te']-df_eventos['ts']) + dt.timedelta(days=1)
 
-    print('10 ok')
+        print('9 ok')
 
-    # 11 - Ajuste de distribuicoes
-    # rv - random variable - deficits
-    # fd - frozen distribution
-    rv = df_eventos['D'].astype('float')
-    # 11.1 - Exponencial
-    params = expon.fit(rv)
-    fd = expon(loc=params[0], scale=params[1])
-    df_eventos['Pexpon(<=Dobs)'] = df_eventos.apply(lambda x:
-        fd.cdf(x['D']), axis=1)
-    # 11.2 - Gama
-    params = gamma.fit(rv)
-    fd = gamma(params[0], loc=params[1], scale=params[2])
-    df_eventos['Pgama(<=Dobs)'] = df_eventos.apply(lambda x:
-        fd.cdf(x['D']), axis=1)
+        # 10 - Exporta o df em excel
+        df_eventos.to_excel('../dados-saida/{}.xlsx'.format(posto))
 
-    print('11 ok')
+        print('10 ok')
 
-    # 12 - Exporta os resultados
-    df_eventos.to_excel('../dados-saida/{}.xlsx'.format(posto))
+        # 11 - Ajuste de distribuicoes
+        # rv - random variable - deficits
+        # fd - frozen distribution
+        rv = df_eventos['D'].astype('float')
+        # 11.1 - Exponencial
+        params = expon.fit(rv)
+        fd = expon(loc=params[0], scale=params[1])
+        df_eventos['Pexpon(<=Dobs)'] = df_eventos.apply(lambda x:
+            fd.cdf(x['D']), axis=1)
+        # 11.2 - Gama
+        params = gamma.fit(rv)
+        fd = gamma(params[0], loc=params[1], scale=params[2])
+        df_eventos['Pgama(<=Dobs)'] = df_eventos.apply(lambda x:
+            fd.cdf(x['D']), axis=1)
+
+        print('11 ok')
+
+        # 12 - Exporta os resultados
+        df_eventos.to_excel('../dados-saida/{}.xlsx'.format(posto))
+    except:
+        print('Ocorreu um erro no cálculo dos eventos de déficit \n',
+              'Possível erro: série com dados vazios')
 
     print('Finalizado {}'.format(posto))

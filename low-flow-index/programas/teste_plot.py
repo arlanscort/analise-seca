@@ -19,7 +19,9 @@ os.chdir(dir_plot)
 #nome_bacia = 'uniao_da_vitoria'
 #nome_bacia = 'tomazina'
 #nome_bacia = 'fazendinha'
-nome_bacia = 'maringa'
+#nome_bacia = 'maringa'
+#nome_bacia = 'passauna'
+nome_bacia = 'senges'
 
 data_ini = data_inicial
 data_fim = data_final
@@ -72,7 +74,14 @@ plt.gca().xaxis.set_tick_params(rotation = 30)
 # Changes x-axis range
 plt.gca().set_xbound(data_ini, data_fim)
 # Legenda
-plt.title(nome_bacia.replace('_',' ').title())
+#plt.title('União da Vitória \n Rio Iguaçu - 24200 km²') #UVA
+#plt.title('Tomazina \n Rio das Cinzas - 2020 km²') #Tomazina
+#plt.title('RMC \n Rio Pequeno - 106 km²') #Fazendinha
+#plt.title('Maringá \n Ribeirão Pirapó - 1240 km²') #Maringa
+#plt.title('Passauna')
+plt.title('Senges')
 plt.legend(loc=2)
+plt.annotate('q91',(obs.index[-1],obs[-1]), size=8, weight='bold',
+             xytext=(obs.index[-1]+dt.timedelta(days=2),obs[-1]))
 plt.savefig(nome_bacia+'_plot2.png', dpi = 300)
 plt.show()
