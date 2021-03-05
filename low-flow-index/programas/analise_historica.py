@@ -10,13 +10,19 @@ import matplotlib.dates as mdates
 import seaborn as sns
 
 postos = {
-          'uniao_da_vitoria':'União da Vitória \n Rio Iguaçu - 24200 km²',
-          'tomazina':'Tomazina \n Rio das Cinzas - 2020 km²',
-          'fazendinha':'RMC \n Rio Pequeno - 106 km²',
-          'maringa':'Maringá \n Ribeirão Pirapó - 1240 km²',
-          'passauna':'RMC - Campo Largo \n Rio Passaúna - 84.4 km²',
-          'senges':'Bacia do Rio das Cinzas - Sengés \n Rio Jaguaricatu - 869 km²',
-          'cachoeira':'Cachoeira',
+    #'eta_francisco_beltrao': 'ETA Francisco Beltrão \n Rio Marrecas - 336 km²',
+    #'porto_carriel': 'Porto Carriel \n Rio Piquiri - 3540 km²',
+    #'porto_espanhol': 'Porto Espanhol \n Rio Ivaí - 8540 km²',
+    #'maringa':'Maringá \n Ribeirão Pirapó - 1240 km²',
+    #'uniao_da_vitoria':'União da Vitória \n Rio Iguaçu - 24200 km²',
+    #'fazendinha':'RMC \n Rio Pequeno - 106 km²',
+    #'eta_irati': 'ETA Irati \n Rio Imbituva - 226 km²',
+    #'tomazina':'Tomazina \n Rio das Cinzas - 2020 km²',
+    #'cachoeira':'Cachoeira - São José dos Pinhais \n Rio Miringuava - 272 km²',
+    'senges':'Bacia do Itaraté - Sengés \n Rio Jaguaricatu - 869 km²',
+    #'ponte_acungui': 'Ponte do Açungui - Campo Largo \n Rui Açungui - 582 km²',
+    #'morretes': 'Morretes \n Rio Nhundiaquara - 215 km²',
+#    'passauna':'RMC - Campo Largo \n Rio Passaúna - 84.4 km²',
           }
 qref = 95
 tc   = 15
@@ -54,7 +60,7 @@ for posto, legenda in postos.items():
     # 1 - Aquisicao da serie de vazoes do posto
     path = '../dados-entrada/'
     srq = pd.read_csv(path+'{}.csv'.format(posto)
-            , parse_dates=True, index_col='data')['q_m3s']
+            , parse_dates=True, index_col='data')['vazao']
 
     print('1 ok')
 
@@ -97,7 +103,7 @@ for posto, legenda in postos.items():
                         if ((x.name.month == 2) and (x.name.day == 29)) else
                         df_qrefs.loc[(df_qrefs['mes']==x.name.month)&
                         (df_qrefs['dia']==x.name.day),qref].values[0], axis=1)
-    df_deficits['di'] = df_deficits[qref] - df_deficits['q_m3s']
+    df_deficits['di'] = df_deficits[qref] - df_deficits['vazao']
     df_deficits['q50'] = df_deficits.apply(lambda x:
                         df_qrefs.loc[(df_qrefs['mes']==x.name.month)&
                         (df_qrefs['dia']==28),'q50'].values[0]
@@ -114,12 +120,12 @@ for posto, legenda in postos.items():
     data_fim = dt.datetime.now()
     serie_observada = df_deficits
     serie_observada = serie_observada.loc[str(data_ini) : str(data_fim)]
-    obs = serie_observada['q_m3s']
+    obs = serie_observada['vazao']
     q95 = serie_observada['q95']
     q50 = serie_observada['q50']
 
     plt.figure()
-    plt.plot(serie_observada['q_m3s'], label = "Observado", linewidth = 0.6, color = 'black')
+    plt.plot(serie_observada['vazao'], label = "Observado", linewidth = 0.6, color = 'black')
     plt.plot(serie_observada['q95'], label = "Q95", linewidth = 0.8, color = 'maroon')
     plt.fill_between(serie_observada.index, obs, q95, where = (obs < q95), color = 'red', alpha = 0.3)
     #plt.plot(serie_observada['q50'], label = "Q50", linewidth = 0.8, color = 'darkgoldenrod')
